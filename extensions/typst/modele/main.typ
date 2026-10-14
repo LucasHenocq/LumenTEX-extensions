@@ -1,4 +1,4 @@
-#set document(title: "{{titre}}", author: "{{auteur}}")
+#set document(title: [{{titre}}], author: "{{auteur}}")
 #set page(paper: "a4", margin: 2.5cm, numbering: "1")
 #set text(lang: "fr", size: 11pt)
 #set par(justify: true)

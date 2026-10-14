@@ -8,10 +8,36 @@ function typstLanguage(cm) {
   const { tags: t } = cm.highlight
   const KEYWORDS = new Set(['let', 'set', 'show', 'if', 'else', 'for', 'in', 'while', 'import', 'include', 'return', 'break', 'continue', 'context', 'as', 'none', 'auto', 'true', 'false', 'and', 'or', 'not'])
 
+  // Mots-clés suivis de code jusqu'à la fin de la ligne (#let x = …, #set text(…), #show …)
+  const LINE_CODE = new Set(['let', 'set', 'show', 'import', 'include', 'if', 'else', 'for', 'while', 'return', 'context'])
+  // Noms : toutes les lettres (accents compris), chiffres, _ et -
+  const NAME = /^[\p{L}_][\p{L}\p{N}_-]*/u
+
+  // Contextes imbriqués (pile) : 'code' (parenthèses, accolades), 'line' (code jusqu'à la fin de la ligne après
+  // #let, #set…), 'content' ([…] : du texte Typst, même au milieu du code). Pile vide : texte du document.
+  const top = (s) => s.stack[s.stack.length - 1]
+  const inCode = (s) => top(s) === 'code' || top(s) === 'line'
+
   const language = StreamLanguage.define({
     name: 'typst',
-    startState: () => ({ math: false, comment: false, raw: false, code: 0 }),
+    startState: () => ({ math: false, comment: false, raw: false, stack: [], call: false }),
+    copyState: (s) => ({ ...s, stack: [...s.stack] }),
     token(stream, s) {
+      // Fin de ligne : le code d'un #let / #set s'arrête
+      if (stream.sol()) while (top(s) === 'line') s.stack.pop()
+      const call = s.call
+      s.call = false
+      // Juste après #fonction ou une parenthèse fermée : ( ouvre du code, [ du texte
+      if (call && stream.peek() === '(') {
+        stream.next()
+        s.stack.push('code')
+        return 'brace'
+      }
+      if (call && stream.peek() === '[') {
+        stream.next()
+        s.stack.push('content')
+        return 'brace'
+      }
       // Commentaire de bloc /* … */
       if (s.comment) {
         if (stream.skipTo('*/')) {
@@ -43,38 +69,54 @@ function typstLanguage(cm) {
         }
         return 'string'
       }
-      if (stream.match(/^`[^`]*`/)) return 'string'
-      if (stream.match(/^\\./)) return 'escape'
-      // Maths
-      if (stream.peek() === '$') {
+      // Maths (dans le texte comme dans un bloc [...])
+      if (!inCode(s) && stream.peek() === '$') {
         stream.next()
         s.math = !s.math
         return 'bracket.special'
       }
       if (s.math) {
         if (stream.match(/^"[^"]*"/)) return 'string'
-        if (stream.match(/^[a-zA-Z][a-zA-Z.]+/)) return 'operatorKeyword'
+        if (stream.match(/^\p{L}[\p{L}.]+/u)) return 'operatorKeyword'
         if (stream.match(/^\d+(\.\d+)?/)) return 'number'
         stream.next()
         return 'string.special'
       }
-      // Code : #fonction, #mot-clé, et ce qui suit dans les parenthèses
-      if (stream.match(/^#[a-zA-Z_][\w-]*(\.[a-zA-Z_][\w-]*)*/)) {
+      if (inCode(s)) {
+        if (stream.match(/^"(?:[^"\\]|\\.)*"/)) return 'string'
+        if (stream.match(/^-?\d+(\.\d+)?(pt|mm|cm|in|em|fr|%|deg|rad)?\b/)) return 'number'
+        if (stream.match(/^#?[\p{L}_][\p{L}\p{N}_-]*(?=\s*:(?!:))/u)) return 'attributeValue'
+        if (stream.match(/^#?[\p{L}_][\p{L}\p{N}_-]*(\.[\p{L}_][\p{L}\p{N}_-]*)*/u)) {
+          const word = stream.current().replace(/^#/, '')
+          s.call = true
+          return KEYWORDS.has(word) ? 'keyword' : 'variableName.function'
+        }
+        const ch = stream.next()
+        if (ch === '(' || ch === '{') s.stack.push('code')
+        else if (ch === '[') s.stack.push('content')
+        else if (ch === ')' || ch === '}') {
+          if (top(s) === 'code') s.stack.pop()
+          s.call = true
+        } else return null
+        return 'brace'
+      }
+      // Texte : fin d'un bloc [...]
+      if (top(s) === 'content' && stream.peek() === ']') {
+        stream.next()
+        s.stack.pop()
+        s.call = true
+        return 'brace'
+      }
+      if (stream.match(/^`[^`]*`/)) return 'string'
+      if (stream.match(/^\\./)) return 'escape'
+      // #fonction ou #mot-clé dans le texte
+      if (stream.peek() === '#' && stream.match(/^#[\p{L}_][\p{L}\p{N}_-]*(\.[\p{L}_][\p{L}\p{N}_-]*)*/u)) {
         const name = stream.current().slice(1).split('.')[0]
-        if (stream.peek() === '(') s.code = 1
+        if (LINE_CODE.has(name)) s.stack.push('line')
+        else s.call = true
         return KEYWORDS.has(name) ? 'keyword' : 'variableName.function'
       }
-      if (s.code > 0) {
-        if (stream.match(/^"(?:[^"\\]|\\.)*"/)) return 'string'
-        if (stream.match(/^-?\d+(\.\d+)?(pt|mm|cm|in|em|fr|%|deg|rad)?/)) return 'number'
-        if (stream.match(/^[a-zA-Z_][\w-]*(?=\s*:)/)) return 'attributeValue'
-        if (stream.match(/^[a-zA-Z_][\w-]*/)) return KEYWORDS.has(stream.current()) ? 'keyword' : 'variableName.function'
-        const ch = stream.next()
-        if (ch === '(') s.code++
-        else if (ch === ')') s.code--
-        return ch === '(' || ch === ')' || ch === '[' || ch === ']' ? 'brace' : null
-      }
-      // Markup en début de ligne : titres, listes
+      // Texte en début de ligne : titres, listes
       if (stream.sol()) {
         if (stream.match(/^\s*=+\s/)) {
           stream.skipToEnd()
@@ -83,11 +125,12 @@ function typstLanguage(cm) {
         if (stream.match(/^\s*([-+]|\d+\.)\s/)) return 'keyword'
         if (stream.match(/^\s*\/\s/)) return 'keyword'
       }
-      if (stream.match(/^<[\w:.-]+>/)) return 'labelName'
-      if (stream.match(/^@[\w:.-]+/)) return 'labelName'
+      if (stream.match(/^<[\p{L}\p{N}_:.-]+>/u)) return 'labelName'
+      if (stream.match(/^@[\p{L}\p{N}_:.-]+/u)) return 'labelName'
       if (stream.match(/^\*[^*\n]+\*/)) return 'strong'
       if (stream.match(/^_[^_\n]+_/)) return 'emphasis'
-      if (stream.match(/^[\[\]]/)) return 'brace'
+      // Mot entier d'un coup (lettres accentuées comprises)
+      if (stream.match(NAME)) return null
       stream.next()
       return null
     },
@@ -200,12 +243,33 @@ export async function activate(lumen) {
   // Téléchargement de Typst : progression dans la barre d'état
   lumen.node.on('progression', (text) => lumen.compile.progress(text))
 
-  await lumen.compilers.register({
-    id: 'typst',
-    name: 'Typst',
-    language: 'typst',
-    check: async () => lumen.node.call('verifier', await lumen.settings.get('chemin')),
-    compile: async ({ root, mainFile, outDir }) => lumen.node.call('compiler', { exe: await lumen.settings.get('chemin'), root, mainFile, outDir }),
-    cancel: () => lumen.node.call('arreter')
+  // Enregistré de nouveau quand le programme change (réglage, mise à jour) : sa disponibilité est revérifiée
+  const registerCompiler = () =>
+    lumen.compilers.register({
+      id: 'typst',
+      name: 'Typst',
+      language: 'typst',
+      check: async () => lumen.node.call('verifier', await lumen.settings.get('chemin')),
+      compile: async ({ root, mainFile, outDir }) => lumen.node.call('compiler', { exe: await lumen.settings.get('chemin'), root, mainFile, outDir }),
+      cancel: () => lumen.node.call('arreter')
+    })
+  await registerCompiler()
+  await lumen.settings.onChange((id) => id === 'chemin' && registerCompiler())
+
+  await lumen.commands.register({
+    id: 'mettre-a-jour',
+    label: 'Télécharger la dernière version de Typst',
+    run: async () => {
+      if (await lumen.settings.get('chemin'))
+        return lumen.ui.notify('Un programme Typst est indiqué dans les réglages de l’extension : c’est lui qui est utilisé.', 'info')
+      lumen.ui.notify('Téléchargement de la dernière version de Typst…')
+      try {
+        const v = await lumen.node.call('mettreAJour')
+        await registerCompiler()
+        lumen.ui.notify(`Typst ${v} est installé`, 'success')
+      } catch (e) {
+        lumen.ui.notify(e.message, 'error')
+      }
+    }
   })
 }

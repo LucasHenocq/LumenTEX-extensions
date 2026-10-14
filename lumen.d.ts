@@ -159,8 +159,8 @@ interface Lumen {
   }
 
   languages: {
-    /** Langage (aussi déclarable dans le manifeste) ; editor : extension CodeMirror (vérifiée seulement) */
-    register(l: { id: string; name: string; extensions: string[]; editor?: any; autoCompile?: boolean }): Promise<void>
+    /** Langage (aussi déclarable dans le manifeste) ; editor : extension CodeMirror (vérifiée seulement) ; icon : SVG en data URL */
+    register(l: { id: string; name: string; extensions: string[]; editor?: any; autoCompile?: boolean; icon?: string }): Promise<void>
   }
 
   session: {
@@ -213,7 +213,8 @@ interface Lumen {
 /** Objet reçu par la partie Node.js (fichier « node » du manifeste) */
 interface LumenNode {
   version: string
-  /** Dossier de données de l'extension (programmes téléchargés, caches), effacé à sa désinstallation (1.5.1) */
+  /** Dossier de données de l'extension (programmes téléchargés, caches), effacé à sa désinstallation (1.5.1).
+   *  C'est aussi le dossier courant du processus (1.5.2) */
   dataDir: string
   /** Répond à lumen.node.call(name, …) */
   handle(name: string, fn: (...args: any[]) => unknown): void

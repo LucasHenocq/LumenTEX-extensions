@@ -91,6 +91,14 @@ Proposés après `\begin{`. Le `body` (même syntaxe que les snippets) est plac�
 
 Un groupe du panneau Σ : des commandes LaTeX séparées par des espaces (ou une liste). Chacune est affichée mise en forme et insérée telle quelle.
 
+Pour un autre langage (Lumen TeX 1.5.2), indiquez-le avec `language`, et donnez une liste de « caractère nom » : le caractère est affiché et inséré, le nom sert à la recherche et s'affiche au survol. Le panneau Σ propose les groupes du langage du fichier ouvert.
+
+```json
+"symbols": [
+  { "name": "Grec", "language": "typst", "items": ["α alpha", "β beta", "γ gamma"] }
+]
+```
+
 ### Modèles de projet (`templates`)
 
 ```json
@@ -147,7 +155,7 @@ Le même code fonctionne dans les deux cas : l'objet `lumen` est le même, et to
   "settings": [
     { "id": "langue", "label": "Langue", "type": "select", "options": ["fr", "en"], "default": "fr" }
   ],
-  "languages": [{ "id": "typst", "name": "Typst", "extensions": [".typ"] }]
+  "languages": [{ "id": "typst", "name": "Typst", "extensions": [".typ"], "icon": "fichier-typ.svg" }]
 }
 ```
 
@@ -158,7 +166,7 @@ Le même code fonctionne dans les deux cas : l'objet `lumen` est le même, et to
 | `icon` | Icône SVG de son panneau (une seule couleur : elle prend celle de l'interface). |
 | `permissions` | Ce que l'extension utilise, montré à l'installation. `session` est nécessaire pour échanger entre participants. |
 | `settings` | Réglages affichés par Lumen TeX (`toggle`, `text`, `number`, `select`), lus avec `lumen.settings.get`. |
-| `languages` | Langages reconnus (extensions de fichier), pour qu'un compilateur puisse les compiler. |
+| `languages` | Langages reconnus (extensions de fichier), pour qu'un compilateur puisse les compiler. `icon` : icône SVG des fichiers de ce langage (arbre des fichiers, onglets ; Lumen TeX 1.5.2). |
 
 ### Exemple
 
