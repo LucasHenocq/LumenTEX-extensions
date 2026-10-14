@@ -115,6 +115,108 @@ Tous les fichiers du dossier `folder` sont copiés dans le nouveau projet, image
 
 Des valeurs pour les variables de couleur de Lumen TeX, en clair (`light`) et/ou en sombre (`dark`). Seules des variables (`--nom`) sont acceptées, sans `url(…)`. L'extension [`themes`](extensions/themes/lumen-extension.json) donne la liste complète : fonds (`--bg`, `--panel`, `--editor-bg`…), texte (`--text`, `--text-muted`…), accent, et coloration du LaTeX (`--syn-command`, `--syn-env`, `--syn-math`…).
 
+## Extensions avec code
+
+Depuis Lumen TeX 1.5.0, une extension peut contenir du JavaScript : commandes, panneaux, autocomplétion, erreurs signalées dans l'éditeur, compilateurs, autres langages, échanges entre participants d'une session partagée…
+
+### Vérifiée ou non
+
+- **Catalogue (ce dépôt) = vérifiée.** Le code est relu avant d'entrer ici. L'extension fonctionne dans la fenêtre de Lumen TeX, avec tous les pouvoirs : CodeMirror directement, partie Node.js (programmes de l'ordinateur), sessions partagées.
+- **Installée depuis un dossier = non vérifiée.** Elle fonctionne isolée : elle ne voit que le projet ouvert, Internet seulement vers les sites qu'elle déclare, pas de partie Node.js, et elle est arrêtée pendant les sessions partagées.
+- **Mode développeur** (Réglages → Extensions) : toutes les extensions fonctionnent comme si elles étaient vérifiées, pour développer et tester la vôtre. Les autres participants d'une session en sont prévenus.
+
+Le même code fonctionne dans les deux cas : l'objet `lumen` est le même, et toutes ses fonctions s'attendent avec `await`.
+
+### Manifeste
+
+```json
+{
+  "id": "mon-extension",
+  "name": "Mon extension",
+  "version": "1.0.0",
+  "lumen": "1.5.0",
+  "main": "main.js",
+  "node": "node.js",
+  "icon": "icone.svg",
+  "permissions": {
+    "network": ["api.exemple.org"],
+    "microphone": false,
+    "camera": false,
+    "session": true
+  },
+  "settings": [
+    { "id": "langue", "label": "Langue", "type": "select", "options": ["fr", "en"], "default": "fr" }
+  ],
+  "languages": [{ "id": "typst", "name": "Typst", "extensions": [".typ"] }]
+}
+```
+
+| Champ | Rôle |
+| --- | --- |
+| `main` | Module JavaScript (`.js` ou `.mjs`) qui exporte `activate(lumen)`, et éventuellement `deactivate()`. |
+| `node` | Partie Node.js facultative (extensions vérifiées) : exporte `activate(lumen)`, avec `lumen.handle` et `lumen.send`. |
+| `icon` | Icône SVG de son panneau (une seule couleur : elle prend celle de l'interface). |
+| `permissions` | Ce que l'extension utilise, montré à l'installation. `session` est nécessaire pour échanger entre participants. |
+| `settings` | Réglages affichés par Lumen TeX (`toggle`, `text`, `number`, `select`), lus avec `lumen.settings.get`. |
+| `languages` | Langages reconnus (extensions de fichier), pour qu'un compilateur puisse les compiler. |
+
+### Exemple
+
+```js
+/// <reference path="../../lumen.d.ts" />
+/** @param {Lumen} lumen */
+export async function activate(lumen) {
+  await lumen.commands.register({
+    id: 'salut',
+    label: 'Dire bonjour',
+    shortcut: 'Mod-Alt-b',
+    run: () => lumen.ui.notify('Bonjour !', 'success')
+  })
+  await lumen.ui.addPanel({ id: 'panneau', title: 'Mon panneau' }, (el) => {
+    el.innerHTML = '<button class="btn primary">Compter les fichiers</button>'
+    el.querySelector('button').onclick = async () => lumen.ui.notify(`${(await lumen.project.list()).length} fichiers`)
+  })
+}
+```
+
+Le fichier [`lumen.d.ts`](lumen.d.ts) décrit tout l'objet `lumen` : avec la ligne `/// <reference …>`, VS Code propose l'autocomplétion. Le dossier [`exemples/`](exemples) contient des extensions complètes (elles ne sont pas dans le catalogue) :
+
+- `bonjour` : commandes, panneau, barre d'état, autocomplétion, erreurs, réglages, stockage ;
+- `langage-demo` : un langage inventé et son compilateur, sans programme externe (le PDF est fabriqué en JavaScript) ;
+- `compilateur-node` : un compilateur LaTeX qui lance un programme depuis la partie Node.js (comme le ferait une extension pdfLaTeX).
+
+### Ce que peut faire l'objet `lumen`
+
+| Partie | Rôle |
+| --- | --- |
+| `commands` | Commandes de la palette, raccourcis clavier |
+| `ui` | Panneau, barre d'état, notifications, questions (`confirm`, `prompt`) |
+| `editor` | Fichier actif, texte, sélection, insertion, modifications |
+| `completion` | Propositions d'autocomplétion, pour certains langages |
+| `diagnostics` | Problèmes affichés dans le panneau Problèmes et soulignés dans l'éditeur |
+| `project` | Lire, écrire, lister les fichiers du projet ouvert |
+| `compile` | Lancer et suivre la compilation |
+| `compilers`, `languages` | Ajouter un compilateur ou un langage |
+| `session` | Participants, messages et données (JSON ou octets) vers la même extension chez les autres |
+| `settings`, `storage` | Réglages déclarés, petites données gardées |
+| `fetch` | Internet |
+| `node`, `codemirror`, `editor.addExtension` | Extensions vérifiées seulement |
+
+Le panneau d'une extension a les styles de Lumen TeX : classes `btn`, `btn primary`, `btn small`, `input`, `muted`, et les variables de couleur (`var(--accent)`…), qui suivent le thème.
+
+### Compilateurs et langages
+
+Le compilateur d'un langage reçoit `{ root, mainFile, outDir }` et rend le PDF (octets ou chemin), son journal et ses erreurs. Tectonic, le compilateur LaTeX de Lumen TeX, passe par la même porte. Quand plusieurs compilateurs sont disponibles pour le langage du fichier principal, un menu apparaît à côté de « Compiler ». Un compilateur qui fournit `check()` peut se déclarer indisponible, avec la raison affichée à l'utilisateur.
+
+### Relecture d'une extension avec code
+
+Avant d'accepter une pull request, vérifier que :
+
+- le code fait ce que dit la description, et rien d'autre ;
+- les sites de `permissions.network` sont justifiés, et rien n'est envoyé sans que l'utilisateur le sache ;
+- la partie Node.js, s'il y en a une, ne lance que ce qui est annoncé ;
+- il n'y a pas de code minifié ou téléchargé à l'exécution (tout doit être lisible ici).
+
 ## Essayer une extension
 
 Dans Lumen TeX : **Réglages → Extensions → Installer depuis un dossier…**, puis choisissez le dossier qui contient `lumen-extension.json`. Après une modification, installez-la de nouveau.

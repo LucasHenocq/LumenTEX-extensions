@@ -1,0 +1,9 @@
+{
+  "id": "exemple-langage-demo",
+  "name": "Exemple : langage Démo",
+  "version": "1.0.0",
+  "author": "Lumen TeX",
+  "description": "Un langage inventé (.demo) et son compilateur, sans programme externe.",
+  "main": "main.js",
+  "languages": [{ "id": "demo", "name": "Démo", "extensions": [".demo"] }]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "exemple-compilateur-node",
+  "name": "Exemple : compilateur par Node.js",
+  "version": "1.0.0",
+  "author": "Lumen TeX",
+  "description": "Compilateur LaTeX qui lance Tectonic depuis sa partie Node.js, comme le ferait une extension pdfLaTeX.",
+  "lumen": "1.5.0",
+  "main": "main.js",
+  "node": "node.js",
+  "settings": [{ "id": "chemin", "label": "Chemin de tectonic.exe", "type": "text", "default": "" }]
+}

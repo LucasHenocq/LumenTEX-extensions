@@ -1,0 +1,14 @@
+{
+  "id": "exemple-bonjour",
+  "name": "Exemple : Bonjour",
+  "version": "1.0.0",
+  "author": "Lumen TeX",
+  "description": "Exemple : commandes, panneau, barre d'état, autocomplétion, erreurs, réglages, stockage.",
+  "lumen": "1.5.0",
+  "main": "main.js",
+  "icon": "icon.svg",
+  "settings": [
+    { "id": "salutation", "label": "Salutation", "type": "text", "default": "Bonjour" },
+    { "id": "todo", "label": "Souligner les TODO", "type": "toggle", "default": true }
+  ]
+}
