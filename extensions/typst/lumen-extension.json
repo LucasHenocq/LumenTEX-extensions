@@ -1,0 +1,22 @@
+{
+  "id": "typst",
+  "name": "Typst",
+  "version": "1.0.0",
+  "author": "Lumen TeX",
+  "description": "Écrivez en Typst : coloration, autocomplétion, compilation et erreurs dans l'éditeur. Typst (le programme officiel) se télécharge à la première compilation.",
+  "lumen": "1.5.1",
+  "main": "main.js",
+  "node": "node.js",
+  "permissions": { "network": ["github.com"] },
+  "languages": [{ "id": "typst", "name": "Typst", "extensions": [".typ"] }],
+  "settings": [
+    {
+      "id": "chemin",
+      "label": "Programme Typst",
+      "type": "text",
+      "default": "",
+      "description": "Vide : celui téléchargé par l'extension. Sinon, le chemin d'un typst déjà installé."
+    }
+  ],
+  "templates": [{ "name": "Document Typst", "description": "Un document écrit en Typst", "folder": "modele" }]
+}

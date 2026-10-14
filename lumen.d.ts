@@ -213,6 +213,8 @@ interface Lumen {
 /** Objet reçu par la partie Node.js (fichier « node » du manifeste) */
 interface LumenNode {
   version: string
+  /** Dossier de données de l'extension (programmes téléchargés, caches), effacé à sa désinstallation (1.5.1) */
+  dataDir: string
   /** Répond à lumen.node.call(name, …) */
   handle(name: string, fn: (...args: any[]) => unknown): void
   /** Événement reçu par lumen.node.on(name, …) */
