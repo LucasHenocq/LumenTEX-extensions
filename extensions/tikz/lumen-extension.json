@@ -1,0 +1,81 @@
+{
+  "id": "tikz",
+  "name": "TikZ et pgfplots",
+  "version": "1.0.0",
+  "author": "Lumen TeX",
+  "description": "Figures, repères, courbes et graphes de fonctions avec TikZ et pgfplots.",
+  "lumen": "1.4.0",
+  "snippets": {
+    "Charger TikZ": {
+      "prefix": "usetikz",
+      "body": ["\\usepackage{tikz}", "\\usetikzlibrary{${1:arrows.meta, positioning, calc}}"],
+      "description": "Charge TikZ et ses bibliothèques (dans le préambule)"
+    },
+    "Charger pgfplots": {
+      "prefix": "usepgfplots",
+      "body": ["\\usepackage{pgfplots}", "\\pgfplotsset{compat=1.18}"],
+      "description": "Charge pgfplots (dans le préambule)"
+    },
+    "Figure TikZ": {
+      "prefix": "tikzfig",
+      "body": [
+        "\\begin{figure}[${1:htbp}]",
+        "\t\\centering",
+        "\t\\begin{tikzpicture}",
+        "\t\t$0",
+        "\t\\end{tikzpicture}",
+        "\t\\caption{${2:Légende}}",
+        "\t\\label{fig:${3:nom}}",
+        "\\end{figure}"
+      ],
+      "description": "Figure centrée avec un dessin TikZ, une légende et une étiquette"
+    },
+    "Repère": {
+      "prefix": "repere",
+      "body": [
+        "\\draw[->] (${1:-0.5},0) -- (${2:4},0) node[right] {\\$x\\$};",
+        "\\draw[->] (0,${3:-0.5}) -- (0,${4:3}) node[above] {\\$y\\$};"
+      ],
+      "description": "Axes d'un repère, avec x et y au bout des flèches"
+    },
+    "Courbe": {
+      "prefix": "courbe",
+      "body": "\\draw[domain=${1:-2}:${2:2}, smooth, variable=\\x, ${3:blue}] plot ({\\x}, {${4:\\x*\\x}});",
+      "description": "Courbe d'une fonction (TikZ seul)"
+    },
+    "Segment": {
+      "prefix": "\\draw",
+      "body": "\\draw[${1:->}] (${2:0,0}) -- (${3:1,1});",
+      "description": "Segment ou flèche entre deux points"
+    },
+    "Cercle": {
+      "prefix": "cercle",
+      "body": "\\draw (${1:0,0}) circle (${2:1});",
+      "description": "Cercle de centre et de rayon donnés"
+    },
+    "Nœud": {
+      "prefix": "\\node",
+      "body": "\\node[${1:above}] at (${2:0,0}) {${3:texte}};",
+      "description": "Texte placé en un point"
+    },
+    "Graphe pgfplots": {
+      "prefix": "pgfplot",
+      "body": [
+        "\\begin{tikzpicture}",
+        "\t\\begin{axis}[axis lines=middle, xlabel=\\$x\\$, ylabel=\\$y\\$, grid=major]",
+        "\t\t\\addplot[domain=${1:-2}:${2:2}, samples=100, ${3:blue}, thick] {${4:x^2}};",
+        "\t\\end{axis}",
+        "\\end{tikzpicture}"
+      ],
+      "description": "Graphe d'une fonction avec pgfplots (axes, quadrillage)"
+    }
+  },
+  "environments": [
+    { "name": "tikzpicture", "body": "$0", "description": "Dessin TikZ" },
+    {
+      "name": "axis",
+      "body": "\\addplot[domain=${1:-2}:${2:2}, samples=100] {${3:x^2}};",
+      "description": "Graphe pgfplots (dans un tikzpicture)"
+    }
+  ]
+}
