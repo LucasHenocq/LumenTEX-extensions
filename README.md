@@ -1,32 +1,39 @@
 # Extensions de Lumen TeX
 
-Le catalogue officiel des extensions de [Lumen TeX](https://github.com/LucasHenocq/LumenTEX). Lumen TeX le lit directement depuis ce dépôt : une extension ajoutée ici apparaît dans **Réglages → Extensions**, et s'installe en un clic.
+Le catalogue officiel des extensions de [Lumen TeX](https://github.com/LucasHenocq/LumenTEX), l'éditeur LaTeX gratuit et autonome. Lumen TeX lit ce dépôt directement : une extension ajoutée ici apparaît dans l'application et s'installe en un clic.
 
-Les extensions n'ont pas de code. Elles ajoutent :
+## Les extensions du catalogue
 
-- des **bouts de LaTeX** à l'autocomplétion (même format que les snippets de VS Code) ;
-- des **environnements**, proposés après `\begin{` ;
-- des **groupes de symboles** dans le panneau Σ ;
-- des **modèles de projet**, dans la fenêtre « Nouveau projet » ;
-- des **thèmes de couleurs**, dans Réglages → Apparence.
+| Extension | Ce qu'elle apporte |
+| --- | --- |
+| **Typst** | Écrire en [Typst](https://typst.app) : coloration, autocomplétion, compilation, erreurs dans l'éditeur, symboles, modèle de document. Le programme Typst se télécharge à la première compilation. |
+| **LanguageTool** | Fautes d'orthographe, de grammaire et de style soulignées dans les documents LaTeX et Typst, avec les corrections proposées. Le texte est envoyé au service LanguageTool, ou à votre propre serveur. |
+| **LaTeX classique** | Compiler avec pdfLaTeX, XeLaTeX, LuaLaTeX ou Latexmk, de la distribution TeX installée sur l'ordinateur (TeX Live, MiKTeX, MacTeX), bibliographie biber ou BibTeX comprise. |
+| **TikZ et pgfplots** | Figures, repères, courbes et graphes de fonctions tout prêts, dans l'autocomplétion. |
+| **Thèmes Nord et Solarized** | Deux thèmes de couleurs, en clair et en sombre. |
 
-Il faut Lumen TeX 1.4.0 ou plus récent.
+## Installer une extension
 
-## Organisation
+Dans Lumen TeX, ouvrez le panneau Extensions (icône de pièce de puzzle dans la barre de gauche, ou Réglages → Extensions), puis « Installer ». Quand une nouvelle version sort, un bouton « Mettre à jour » apparaît sur sa carte.
 
-Une extension par dossier, dans `extensions/` :
+Chaque extension du catalogue est **relue avant d'y entrer** : sa carte porte le badge « Vérifiée ». Avant d'installer une extension qui contient du code, Lumen TeX montre ce qu'elle pourra faire (sites contactés, micro, programmes lancés…).
+
+---
+
+# Créer une extension
+
+Une extension est un dossier qui contient un fichier `lumen-extension.json`. Elle peut se contenter d'apporter du contenu (bouts de LaTeX, symboles, modèles, thèmes), ou contenir du code JavaScript pour ajouter de vraies fonctions.
 
 ```
-extensions/
-  tikz/
-    lumen-extension.json
-  mon-extension/
-    lumen-extension.json
-    snippets.json          (facultatif)
-    modeles/rapport/...    (facultatif, fichiers d'un modèle)
+mon-extension/
+  lumen-extension.json     le manifeste (obligatoire)
+  main.js                  le code, s'il y en a
+  node.js                  la partie Node.js, s'il y en a une
+  snippets.json            des bouts de LaTeX à part (facultatif)
+  modeles/rapport/...      les fichiers d'un modèle de projet (facultatif)
 ```
 
-## Le fichier `lumen-extension.json`
+## Le manifeste
 
 ```json
 {
@@ -35,27 +42,24 @@ extensions/
   "version": "1.0.0",
   "author": "Votre nom",
   "description": "Ce qu'elle apporte, en une phrase.",
-  "lumen": "1.4.0",
-  "snippets": { },
-  "environments": [ ],
-  "symbols": [ ],
-  "templates": [ ],
-  "themes": [ ]
+  "lumen": "1.5.2"
 }
 ```
 
 | Champ | Rôle |
 | --- | --- |
 | `id` | Identifiant unique : minuscules, chiffres et tirets. Le même que le nom du dossier. |
-| `name`, `description`, `author` | Affichés dans Réglages → Extensions. |
+| `name`, `description`, `author` | Affichés sur la carte de l'extension. |
 | `version` | Numéro `x.y.z`. Augmentez-le à chaque modification : Lumen TeX propose alors la mise à jour. |
-| `lumen` | Version minimale de Lumen TeX (facultatif). Une version plus ancienne ne propose pas l'extension. |
+| `lumen` | Version minimale de Lumen TeX (facultatif). Une version plus ancienne affiche l'extension sans permettre de l'installer. Gardez-la la plus basse possible. |
 
-Toutes les parties sont facultatives.
+Tout le reste est facultatif, et se combine librement.
+
+## Contenu, sans code
 
 ### Bouts de LaTeX (`snippets`)
 
-Le format des snippets de VS Code, directement dans le manifeste ou dans un fichier à part (`"snippets": "snippets.json"`). Un fichier de snippets LaTeX de VS Code sert donc tel quel, s'il ne contient pas de commentaires.
+Le format des snippets de VS Code, dans le manifeste ou dans un fichier à part (`"snippets": "snippets.json"`). Un fichier de snippets LaTeX de VS Code sert donc tel quel, s'il ne contient pas de commentaires.
 
 ```json
 "snippets": {
@@ -67,9 +71,9 @@ Le format des snippets de VS Code, directement dans le manifeste ou dans un fich
 }
 ```
 
-- `prefix` : ce qu'on tape pour que l'autocomplétion le propose (une chaîne, ou une liste de chaînes). Il peut commencer par `\`.
-- `body` : le texte inséré, en une chaîne ou une liste de lignes. `$1`, `${1:texte}` sont les champs qu'on remplit avec Tab, `$0` est la position finale du curseur.
-- Dans le JSON, une barre oblique inverse s'écrit `\\`. Un `$` de LaTeX s'écrit `\\$` (par exemple `\\$x\\$` pour `$x$`).
+- `prefix` : ce qu'on tape pour que l'autocomplétion le propose (une chaîne, ou une liste). Il peut commencer par `\`.
+- `body` : le texte inséré, en une chaîne ou une liste de lignes. `$1` et `${1:texte}` sont les champs qu'on remplit avec Tab, `$0` la position finale du curseur.
+- Dans le JSON, une barre oblique inverse s'écrit `\\`, et un `$` de LaTeX `\\$` (`\\$x\\$` pour `$x$`).
 
 ### Environnements (`environments`)
 
@@ -83,15 +87,15 @@ Proposés après `\begin{`. Le `body` (même syntaxe que les snippets) est plac�
 
 ### Symboles (`symbols`)
 
+Un groupe du panneau Σ. Pour LaTeX, des commandes séparées par des espaces (ou une liste), affichées mises en forme et insérées telles quelles :
+
 ```json
 "symbols": [
   { "name": "Ensembles", "items": "\\mathbb{N} \\mathbb{Z} \\mathbb{Q} \\mathbb{R} \\mathbb{C}" }
 ]
 ```
 
-Un groupe du panneau Σ : des commandes LaTeX séparées par des espaces (ou une liste). Chacune est affichée mise en forme et insérée telle quelle.
-
-Pour un autre langage (Lumen TeX 1.5.2), indiquez-le avec `language`, et donnez une liste de « caractère nom » : le caractère est affiché et inséré, le nom sert à la recherche et s'affiche au survol. Le panneau Σ propose les groupes du langage du fichier ouvert.
+Pour un autre langage, indiquez-le avec `language` et donnez une liste de « caractère nom » : le caractère est affiché et inséré, le nom sert à la recherche et s'affiche au survol. Le panneau Σ propose les groupes du langage du fichier ouvert.
 
 ```json
 "symbols": [
@@ -121,52 +125,47 @@ Tous les fichiers du dossier `folder` sont copiés dans le nouveau projet, image
 ]
 ```
 
-Des valeurs pour les variables de couleur de Lumen TeX, en clair (`light`) et/ou en sombre (`dark`). Seules des variables (`--nom`) sont acceptées, sans `url(…)`. L'extension [`themes`](extensions/themes/lumen-extension.json) donne la liste complète : fonds (`--bg`, `--panel`, `--editor-bg`…), texte (`--text`, `--text-muted`…), accent, et coloration du LaTeX (`--syn-command`, `--syn-env`, `--syn-math`…).
+Des valeurs pour les variables de couleur de Lumen TeX, en clair (`light`) et/ou en sombre (`dark`). Seules des variables (`--nom`) sont acceptées, sans `url(…)`. L'extension [`themes`](extensions/themes/lumen-extension.json) donne la liste complète : fonds (`--bg`, `--panel`, `--editor-bg`…), texte (`--text`, `--text-muted`…), accent, et coloration du code (`--syn-command`, `--syn-env`, `--syn-math`…).
 
-## Extensions avec code
+### Langages (`languages`)
 
-Depuis Lumen TeX 1.5.0, une extension peut contenir du JavaScript : commandes, panneaux, autocomplétion, erreurs signalées dans l'éditeur, compilateurs, autres langages, échanges entre participants d'une session partagée…
+```json
+"languages": [{ "id": "typst", "name": "Typst", "extensions": [".typ"], "icon": "fichier-typ.svg" }]
+```
 
-### Vérifiée ou non
+Les fichiers de ces extensions s'ouvrent dans l'éditeur, sont cherchés par la recherche, se modifient à plusieurs en session, et peuvent devenir le fichier principal si un compilateur sait les compiler. `icon` : l'icône SVG de ces fichiers dans l'arbre et sur les onglets.
 
-- **Catalogue (ce dépôt) = vérifiée.** Le code est relu avant d'entrer ici. L'extension fonctionne dans la fenêtre de Lumen TeX, avec tous les pouvoirs : CodeMirror directement, partie Node.js (programmes de l'ordinateur), sessions partagées.
-- **Installée depuis un dossier = non vérifiée.** Elle fonctionne isolée : elle ne voit que le projet ouvert, Internet seulement vers les sites qu'elle déclare, pas de partie Node.js, et elle est arrêtée pendant les sessions partagées.
-- **Mode développeur** (Réglages → Extensions) : toutes les extensions fonctionnent comme si elles étaient vérifiées, pour développer et tester la vôtre. Les autres participants d'une session en sont prévenus.
+## Avec du code
+
+Une extension peut aussi contenir du JavaScript : commandes, panneaux, autocomplétion, erreurs signalées dans l'éditeur, compilateurs, coloration d'un langage, échanges entre les participants d'une session…
+
+### Vérifiée ou isolée
+
+- **Du catalogue = vérifiée.** Son code a été relu. Elle fonctionne dans la fenêtre de Lumen TeX, avec tous les pouvoirs : CodeMirror directement, partie Node.js (programmes de l'ordinateur), sessions partagées.
+- **Installée depuis un dossier = non vérifiée.** Elle fonctionne isolée : elle ne voit que le projet ouvert, n'accède qu'aux sites qu'elle déclare, n'a pas de partie Node.js, et elle est arrêtée pendant les sessions partagées.
+- **Mode développeur** (en bas du panneau Extensions) : toutes les extensions fonctionnent comme si elles étaient vérifiées, pour développer et tester la vôtre. Les autres participants d'une session en sont prévenus.
 
 Le même code fonctionne dans les deux cas : l'objet `lumen` est le même, et toutes ses fonctions s'attendent avec `await`.
 
-### Manifeste
+### Champs du manifeste pour le code
 
 ```json
 {
-  "id": "mon-extension",
-  "name": "Mon extension",
-  "version": "1.0.0",
-  "lumen": "1.5.0",
   "main": "main.js",
   "node": "node.js",
   "icon": "icone.svg",
-  "permissions": {
-    "network": ["api.exemple.org"],
-    "microphone": false,
-    "camera": false,
-    "session": true
-  },
-  "settings": [
-    { "id": "langue", "label": "Langue", "type": "select", "options": ["fr", "en"], "default": "fr" }
-  ],
-  "languages": [{ "id": "typst", "name": "Typst", "extensions": [".typ"], "icon": "fichier-typ.svg" }]
+  "permissions": { "network": ["api.exemple.org"], "microphone": false, "camera": false, "session": true },
+  "settings": [{ "id": "langue", "label": "Langue", "type": "select", "options": ["fr", "en"], "default": "fr" }]
 }
 ```
 
 | Champ | Rôle |
 | --- | --- |
 | `main` | Module JavaScript (`.js` ou `.mjs`) qui exporte `activate(lumen)`, et éventuellement `deactivate()`. |
-| `node` | Partie Node.js facultative (extensions vérifiées) : exporte `activate(lumen)`, avec `lumen.handle` et `lumen.send`. |
-| `icon` | Icône SVG de son panneau (une seule couleur : elle prend celle de l'interface). |
-| `permissions` | Ce que l'extension utilise, montré à l'installation. `session` est nécessaire pour échanger entre participants. |
+| `node` | Partie Node.js (extensions vérifiées) : exporte `activate(lumen)` et répond aux appels avec `lumen.handle`. Elle a son dossier de données, `lumen.dataDir`, effacé à la désinstallation. |
+| `icon` | Icône SVG du panneau de l'extension, d'une seule couleur (elle prend celle de l'interface). |
+| `permissions` | Ce que l'extension utilise, montré avant l'installation. `session` est nécessaire pour échanger entre participants. |
 | `settings` | Réglages affichés par Lumen TeX (`toggle`, `text`, `number`, `select`), lus avec `lumen.settings.get`. |
-| `languages` | Langages reconnus (extensions de fichier), pour qu'un compilateur puisse les compiler. `icon` : icône SVG des fichiers de ce langage (arbre des fichiers, onglets ; Lumen TeX 1.5.2). |
 
 ### Exemple
 
@@ -187,13 +186,7 @@ export async function activate(lumen) {
 }
 ```
 
-Le fichier [`lumen.d.ts`](lumen.d.ts) décrit tout l'objet `lumen` : avec la ligne `/// <reference …>`, VS Code propose l'autocomplétion. Le dossier [`exemples/`](exemples) contient des extensions complètes (elles ne sont pas dans le catalogue) :
-
-- `bonjour` : commandes, panneau, barre d'état, autocomplétion, erreurs, réglages, stockage ;
-- `langage-demo` : un langage inventé et son compilateur, sans programme externe (le PDF est fabriqué en JavaScript) ;
-- `compilateur-node` : un compilateur LaTeX qui lance un programme depuis la partie Node.js (comme le ferait une extension pdfLaTeX).
-
-### Ce que peut faire l'objet `lumen`
+### L'objet `lumen`
 
 | Partie | Rôle |
 | --- | --- |
@@ -210,24 +203,23 @@ Le fichier [`lumen.d.ts`](lumen.d.ts) décrit tout l'objet `lumen` : avec la lig
 | `fetch` | Internet |
 | `node`, `codemirror`, `editor.addExtension` | Extensions vérifiées seulement |
 
-Le panneau d'une extension a les styles de Lumen TeX : classes `btn`, `btn primary`, `btn small`, `input`, `muted`, et les variables de couleur (`var(--accent)`…), qui suivent le thème.
+Le fichier [`lumen.d.ts`](lumen.d.ts) décrit tout l'objet `lumen` : avec la ligne `/// <reference …>`, VS Code propose l'autocomplétion. Le panneau d'une extension a les styles de Lumen TeX : classes `btn`, `btn primary`, `btn small`, `input`, `muted`, et les variables de couleur (`var(--accent)`…), qui suivent le thème.
 
-### Compilateurs et langages
+**Compilateurs.** Le compilateur d'un langage reçoit `{ root, mainFile, outDir }` et rend le PDF (octets ou chemin), son journal et ses erreurs. Tectonic, le compilateur LaTeX de Lumen TeX, passe par la même porte. Quand plusieurs compilateurs sont disponibles pour le langage du fichier principal, un menu apparaît à côté de « Compiler ». Un compilateur qui fournit `check()` peut se déclarer indisponible, avec la raison affichée à l'utilisateur.
 
-Le compilateur d'un langage reçoit `{ root, mainFile, outDir }` et rend le PDF (octets ou chemin), son journal et ses erreurs. Tectonic, le compilateur LaTeX de Lumen TeX, passe par la même porte. Quand plusieurs compilateurs sont disponibles pour le langage du fichier principal, un menu apparaît à côté de « Compiler ». Un compilateur qui fournit `check()` peut se déclarer indisponible, avec la raison affichée à l'utilisateur.
+### Exemples complets
 
-### Relecture d'une extension avec code
+Le dossier [`exemples/`](exemples) contient des extensions à lire et à copier (elles ne sont pas dans le catalogue) :
 
-Avant d'accepter une pull request, vérifier que :
+- `bonjour` : commandes, panneau, barre d'état, autocomplétion, erreurs, réglages, stockage ;
+- `langage-demo` : un langage inventé et son compilateur, sans programme externe (le PDF est fabriqué en JavaScript) ;
+- `compilateur-node` : un compilateur LaTeX qui lance un programme depuis la partie Node.js.
 
-- le code fait ce que dit la description, et rien d'autre ;
-- les sites de `permissions.network` sont justifiés, et rien n'est envoyé sans que l'utilisateur le sache ;
-- la partie Node.js, s'il y en a une, ne lance que ce qui est annoncé ;
-- il n'y a pas de code minifié ou téléchargé à l'exécution (tout doit être lisible ici).
+L'extension [`typst`](extensions/typst) est un exemple réel et complet : coloration, autocomplétion, compilateur, symboles, téléchargement d'un programme.
 
-## Essayer une extension
+## Essayer son extension
 
-Dans Lumen TeX : **Réglages → Extensions → Installer depuis un dossier…**, puis choisissez le dossier qui contient `lumen-extension.json`. Après une modification, installez-la de nouveau.
+Dans Lumen TeX, panneau Extensions → **Installer depuis un dossier…**, puis choisissez le dossier qui contient `lumen-extension.json`. Après une modification, installez-la de nouveau. En mode développeur, **Relier un dossier…** évite de réinstaller : « Recharger les extensions » prend vos modifications, et « Outils de développement » aide à trouver les erreurs. Les messages et erreurs de votre extension s'affichent dans le journal (Ctrl+J), onglet « Extensions ».
 
 ## Proposer une extension
 
@@ -235,4 +227,11 @@ Dans Lumen TeX : **Réglages → Extensions → Installer depuis un dossier…**
 2. Ajoutez votre dossier dans `extensions/`.
 3. Ouvrez une pull request.
 
-Chaque extension est relue avant d'entrer dans le catalogue. Les textes affichés (nom, description, descriptions des bouts de LaTeX) sont en français.
+Les textes affichés (nom, description, réglages, commandes) sont en français.
+
+### Ce qui est vérifié avant d'accepter
+
+- le code fait ce que dit la description, et rien d'autre ;
+- les sites de `permissions.network` sont justifiés, et rien n'est envoyé sans que l'utilisateur le sache ;
+- la partie Node.js, s'il y en a une, ne lance que ce qui est annoncé, et ne télécharge de programme que depuis sa source officielle ;
+- tout le code est lisible ici : pas de code minifié, ni de code JavaScript téléchargé à l'exécution.

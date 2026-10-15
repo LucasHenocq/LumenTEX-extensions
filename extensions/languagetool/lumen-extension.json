@@ -1,0 +1,35 @@
+{
+  "id": "languagetool",
+  "name": "LanguageTool (orthographe et grammaire)",
+  "version": "1.0.0",
+  "author": "Lumen TeX",
+  "description": "Souligne les fautes d'orthographe, de grammaire et de style dans les documents LaTeX et Typst, sans toucher aux commandes ni aux formules. Le texte des paragraphes modifiés est envoyé au service LanguageTool (languagetool.org), sauf si vous indiquez votre propre serveur.",
+  "lumen": "1.5.0",
+  "main": "main.js",
+  "permissions": { "network": ["languagetool.org"] },
+  "settings": [
+    {
+      "id": "langue",
+      "label": "Langue",
+      "type": "select",
+      "options": ["Automatique", "Français", "English (US)", "English (GB)", "Deutsch", "Español", "Italiano", "Português"],
+      "default": "Automatique"
+    },
+    { "id": "auto", "label": "Vérifier pendant la frappe", "type": "toggle", "default": true, "description": "Sinon, avec la commande « Vérifier maintenant »." },
+    { "id": "exigeant", "label": "Mode exigeant", "type": "toggle", "default": false, "description": "Plus de remarques de style." },
+    {
+      "id": "reglesIgnorees",
+      "label": "Règles à ignorer",
+      "type": "text",
+      "default": "",
+      "description": "Identifiants de règles LanguageTool, séparés par des virgules."
+    },
+    {
+      "id": "serveur",
+      "label": "Serveur LanguageTool",
+      "type": "text",
+      "default": "",
+      "description": "Vide : le service gratuit de languagetool.org. Sinon, l'adresse de votre serveur (ex. http://localhost:8081) : le texte ne quitte alors pas votre ordinateur."
+    }
+  ]
+}

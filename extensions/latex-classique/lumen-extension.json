@@ -1,0 +1,42 @@
+{
+  "id": "latex-classique",
+  "name": "LaTeX classique (pdfLaTeX, XeLaTeX, LuaLaTeX, Latexmk)",
+  "version": "1.0.0",
+  "author": "Lumen TeX",
+  "description": "Compilez avec pdfLaTeX, XeLaTeX, LuaLaTeX ou Latexmk, bibliographie biber ou BibTeX comprise. Utilise la distribution TeX de votre ordinateur (TeX Live, MiKTeX, MacTeX), ou installe TinyTeX en un clic s'il n'y en a pas ; les paquets manquants s'installent alors tout seuls.",
+  "lumen": "1.5.2",
+  "main": "main.js",
+  "node": "node.js",
+  "permissions": { "network": ["github.com", "ctan.org", "yihui.org"] },
+  "settings": [
+    {
+      "id": "biblio",
+      "label": "Bibliographie",
+      "type": "select",
+      "options": ["Automatique", "biber", "BibTeX", "Aucune"],
+      "default": "Automatique",
+      "description": "Automatique : biber pour biblatex, BibTeX pour \\bibliography. Latexmk choisit seul."
+    },
+    {
+      "id": "moteur",
+      "label": "Moteur de Latexmk",
+      "type": "select",
+      "options": ["pdfLaTeX", "LuaLaTeX", "XeLaTeX"],
+      "default": "pdfLaTeX"
+    },
+    {
+      "id": "shellEscape",
+      "label": "Autoriser les commandes externes (shell-escape)",
+      "type": "toggle",
+      "default": false,
+      "description": "Nécessaire pour minted ou certains graphiques. À n'activer que pour des documents de confiance."
+    },
+    {
+      "id": "dossier",
+      "label": "Dossier des programmes TeX",
+      "type": "text",
+      "default": "",
+      "description": "Vide : cherché tout seul. Sinon, le dossier qui contient pdflatex (ex. C:\\texlive\\2026\\bin\\windows)."
+    }
+  ]
+}
