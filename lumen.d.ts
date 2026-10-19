@@ -1,4 +1,4 @@
-// Types de l'objet `lumen` reçu par les extensions avec code (Lumen TeX 1.5.0).
+// Types de l'objet `lumen` reçu par les extensions avec code (Lumen TeX 1.7.0).
 // Dans VS Code, ajoutez en tête de votre main.js :   /// <reference path="../../lumen.d.ts" />
 // et écrivez :   /** @param {Lumen} lumen */ export function activate(lumen) { … }
 // Toutes les fonctions peuvent être attendues avec await, que l'extension soit vérifiée ou isolée.
@@ -70,6 +70,15 @@ interface Lumen {
     /** Panneau dans la barre de gauche (icône du manifeste). Isolée : `el` est la page de l'extension */
     addPanel(def: { id: string; title: string }, render: (el: HTMLElement) => void): Promise<void>
     openPanel(id: string): Promise<void>
+    /**
+     * Fenêtre flottante dans Lumen TeX (déplaçable, redimensionnable ; place retrouvée). Déjà ouverte : ramenée devant.
+     * Isolée : une seule fenêtre, et sa page y est posée à la place du panneau.
+     */
+    openWindow(
+      def: { id: string; title: string; width?: number; height?: number; onClose?: () => unknown },
+      render: (el: HTMLElement) => void
+    ): Promise<void>
+    closeWindow(id: string): Promise<void>
     /** Élément à droite de la barre d'état */
     setStatus(id: string, item: { text: string; tooltip?: string; onClick?: () => unknown }): Promise<void>
     removeStatus(id: string): Promise<void>
@@ -184,6 +193,19 @@ interface Lumen {
   storage: {
     get(key: string): MaybePromise<unknown>
     set(key: string, value: unknown): Promise<void>
+  }
+
+  /**
+   * L'IA choisie par l'utilisateur dans Lumen TeX (Claude, Copilot, Gemini ou Ollama). Une question, une réponse : l'IA
+   * ne voit pas le projet (mettez dans la question ce qu'il lui faut) et ne peut rien modifier. Chaque question est
+   * montrée à l'utilisateur, qui l'accepte ou la refuse (erreur), sauf s'il a laissé l'extension faire sans demander.
+   */
+  ai: {
+    available(): Promise<{ ready: boolean; engine: string }>
+    /** Réponse complète ; onText reçoit chaque morceau et le texte reçu jusque-là */
+    ask(prompt: string, opts?: { system?: string; onText?: (chunk: string, text: string) => unknown }): Promise<string>
+    /** Arrête les réponses en cours (ask rend ce qui est déjà arrivé) */
+    stop(): Promise<void>
   }
 
   /** Internet. Non vérifiée : seulement les sites déclarés dans permissions.network */

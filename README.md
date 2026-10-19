@@ -191,7 +191,7 @@ export async function activate(lumen) {
 | Partie | Rôle |
 | --- | --- |
 | `commands` | Commandes de la palette, raccourcis clavier |
-| `ui` | Panneau, barre d'état, notifications, questions (`confirm`, `prompt`) |
+| `ui` | Panneau, fenêtres flottantes (`openWindow`), barre d'état, notifications, questions (`confirm`, `prompt`) |
 | `editor` | Fichier actif, texte, sélection, insertion, modifications |
 | `completion` | Propositions d'autocomplétion, pour certains langages |
 | `diagnostics` | Problèmes affichés dans le panneau Problèmes et soulignés dans l'éditeur |
@@ -201,9 +201,14 @@ export async function activate(lumen) {
 | `session` | Participants, messages et données (JSON ou octets) vers la même extension chez les autres |
 | `settings`, `storage` | Réglages déclarés, petites données gardées |
 | `fetch` | Internet |
+| `ai` | L'IA choisie par l'utilisateur (Claude, Copilot, Gemini ou Ollama) : une question, une réponse |
 | `node`, `codemirror`, `editor.addExtension` | Extensions vérifiées seulement |
 
 Le fichier [`lumen.d.ts`](lumen.d.ts) décrit tout l'objet `lumen` : avec la ligne `/// <reference …>`, VS Code propose l'autocomplétion. Le panneau d'une extension a les styles de Lumen TeX : classes `btn`, `btn primary`, `btn small`, `input`, `muted`, et les variables de couleur (`var(--accent)`…), qui suivent le thème.
+
+**IA.** `lumen.ai.ask(question, { system, onText })` rend la réponse de l'IA que l'utilisateur a choisie dans Lumen TeX ; `onText` la reçoit au fil de l'eau. L'IA ne voit pas le projet (mettez dans la question ce dont elle a besoin) et ne peut rien modifier. Chaque question est d'abord montrée à l'utilisateur, qui l'accepte ou la refuse (`ask` échoue alors), sauf s'il a coché « Utiliser l'IA sans demander » dans les réglages de l'extension : cette case est ajoutée par Lumen TeX, l'extension ne peut ni la lire ni la changer.
+
+**Fenêtres.** `lumen.ui.openWindow({ id, title, width, height, onClose }, (el) => …)` ouvre une fenêtre dans Lumen TeX, que l'utilisateur déplace, redimensionne et ferme ; elle retrouve sa place à la réouverture. Une extension non vérifiée n'a qu'une fenêtre, où sa page est posée (à la place de son panneau tant qu'elle est ouverte).
 
 **Compilateurs.** Le compilateur d'un langage reçoit `{ root, mainFile, outDir }` et rend le PDF (octets ou chemin), son journal et ses erreurs. Tectonic, le compilateur LaTeX de Lumen TeX, passe par la même porte. Quand plusieurs compilateurs sont disponibles pour le langage du fichier principal, un menu apparaît à côté de « Compiler ». Un compilateur qui fournit `check()` peut se déclarer indisponible, avec la raison affichée à l'utilisateur.
 
