@@ -9,6 +9,7 @@ Le catalogue officiel des extensions de [Lumen TeX](https://github.com/LucasHeno
 | **Typst** | Écrire en [Typst](https://typst.app) : coloration, autocomplétion, compilation, erreurs dans l'éditeur, symboles, modèle de document. Le programme Typst se télécharge à la première compilation. |
 | **LanguageTool** | Fautes d'orthographe, de grammaire et de style soulignées dans les documents LaTeX et Typst, avec les corrections proposées. Le texte est envoyé au service LanguageTool, ou à votre propre serveur. |
 | **LaTeX classique** | Compiler avec pdfLaTeX, XeLaTeX, LuaLaTeX ou Latexmk, de la distribution TeX installée sur l'ordinateur (TeX Live, MiKTeX, MacTeX), bibliographie biber ou BibTeX comprise. |
+| **Manim** | Votre IA écrit une animation [Manim](https://www.manim.community) de la preuve où se trouve le curseur, étape par étape ; cliquez une étape pour la revoir et retrouver sa phrase. Python et Manim s'installent à la première utilisation ; LaTeX vient de votre distribution, ou du TinyTeX de « LaTeX classique ». |
 | **TikZ et pgfplots** | Figures, repères, courbes et graphes de fonctions tout prêts, dans l'autocomplétion. |
 | **Thèmes Nord et Solarized** | Deux thèmes de couleurs, en clair et en sombre. |
 

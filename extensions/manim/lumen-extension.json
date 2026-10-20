@@ -1,0 +1,11 @@
+{
+  "id": "manim",
+  "name": "Manim (animer une preuve)",
+  "version": "1.0.0",
+  "author": "Lumen TeX",
+  "description": "Votre IA écrit une animation Manim de la preuve où se trouve le curseur, étape par étape. La vidéo s'affiche dans une fenêtre : cliquez une étape pour la revoir et retrouver sa phrase. Installe Python et Manim à la première utilisation ; utilise le LaTeX de votre ordinateur, ou le TinyTeX de l'extension « LaTeX classique ». Le code écrit par l'IA est vérifié, puis lancé avec un garde-fou (ni programme, ni réseau, ni écriture hors de son dossier).",
+  "lumen": "1.7.0",
+  "main": "main.js",
+  "node": "node.js",
+  "permissions": { "network": ["github.com", "pypi.org", "files.pythonhosted.org"] }
+}
